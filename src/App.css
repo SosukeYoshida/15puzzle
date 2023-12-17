@@ -63,6 +63,7 @@
     background-color: rgb(208, 137, 44);
     color: white;
     font-weight: 600;
+    transition: .3s;
 }
 
 
