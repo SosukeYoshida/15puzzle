@@ -1,9 +1,10 @@
 
-export const FieldSetBtn = ({setIsField }) => {
+export const FieldSetBtn = ({ setIsField, setIsRandomField }) => {
 
-const handleGetFieldClick=()=>{
-setIsField(true);
-}
+    const handleGetFieldClick = () => {
+        setIsField(true);
+        setIsRandomField(true);
+    }
 
     return (
         <div className="fieldSet btn btn-outline-success home-btn" onClick={handleGetFieldClick}>
