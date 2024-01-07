@@ -2,11 +2,12 @@ import { useEffect, useState } from "react"
 import { emptyPosition } from "../feature/emptyPosition"
 import { Timer } from "./Timer";
 import { SumMove } from "./SumMove";
+import { clearGame } from "../feature/clearGame";
 
-export const Field = ({ setIsField, field, setField, time, setTime, moveNum, setMoveNum }) => {
+export const Field = ({ setIsField, field, setField, time, setTime, moveNum, setMoveNum, initField, isField, randomSetField }) => {
 
     const [isStart, setIsStart] = useState(false);
-
+    const [clearMessage, setClearMessage] = useState("");
 
     const handleClick = (rowIndex, columnIndex, column) => {
         //NewGameボタンが押されているなら
@@ -71,16 +72,35 @@ export const Field = ({ setIsField, field, setField, time, setTime, moveNum, set
         });
     }
 
+    //ゲームクリアのメッセージと動作終了の処理、
+    useEffect(() => {
+        if (clearGame(initField, field) && isStart) {
+            setClearMessage("ゲームクリア");
+            setIsStart(false);
+            randomSetField();
+        }
+    }, [field]);
+
+    useEffect(() => {
+        if(isStart){
+        setClearMessage("");
+        }
+    }, [isStart]);
+
     return (
-        <>
-            <div className="start-btn btn btn-outline-primary" onClick={() => { setIsStart(true) }}>NewGame</div>
+        <div className="container">
+            <div className="btns">
+                <div className="start-btn" onClick={() => { setIsStart(true) }}>NewGame</div>
+                <div className="btn btn-outline-primary back-btn" onClick={() => { setIsField(false) }} >戻る</div>
+            </div>
+            {clearMessage && <div className="clear text-danger">{clearMessage}</div>}
             {isStart ?
-                <>
+                <div className="measure">
                     <Timer time={time} setTime={setTime} isStart={isStart}></Timer>
                     <SumMove moveNum={moveNum}></SumMove>
-                </>
+                </div>
                 : ""}
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${field[0].length}, 120px)`, gridAutoRows: "120px" }}
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${field[0].length - 2}, 120px)`, gridAutoRows: "120px" }}
                 className="field">
                 {field.map((row, rowIndex) => {
                     return row.map((column, columnIndex) => {
@@ -92,13 +112,13 @@ export const Field = ({ setIsField, field, setField, time, setTime, moveNum, set
                         else if (column == 16) {
                             return <div className="bg-secondary border"></div>
                         }
-                        else if (column == 0) {
-                            return <div className="bg-white"></div>
-                        }
+                        // else if (column == 0) {
+                        //     return <div className="bg-white"></div>
+                        // }
                     })
                 })}
             </div>
-        </>
+        </div>
     )
 
 }

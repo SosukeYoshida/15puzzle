@@ -5,25 +5,29 @@ import { fieldApi } from "../api/fieldApi"
 import { Field } from "./Field"
 import { SettingBtn } from "./btns/SettingBtn"
 import { Setting } from "./Setting"
+import { clearGame } from "../feature/clearGame"
 
 export const Main = ({ setIsLogin }) => {
 
     const [field, setField] = useState([]);
+    const [initField, setInitField] = useState([]);
     const [isField, setIsField] = useState(false);
     const [isRandomField, setIsRandomField] = useState(false);
     const [isSetting, setIsSetting] = useState(false);
     const [isToggle, setIsToggle] = useState(false);
-    const [isStart, setIsStart] = useState(false);
     const [time, setTime] = useState(0);
     const [moveNum, setMoveNum] = useState(0);
 
     const getField = async () => {
         const data = await fieldApi();
-        setField(data)
+        setField(data);
+
+        //JSONを使って初期状態の配列を保持
+        const defField = JSON.parse(JSON.stringify(data));
+        setInitField(defField);
     }
     useEffect(() => {
         getField();
-
     }, []);
 
     useEffect(() => {
@@ -41,7 +45,6 @@ export const Main = ({ setIsLogin }) => {
             for (let i = 0; i < prev.length; i++) {
                 for (let j = 0; j < prev[i].length; j++) {
                     if (prev[i][j] != 0) {
-                        console.log(randomNum);
                         do {
                             randomNum = Math.floor(Math.random() * 16) + 1;
                         } while (usedNum.has(randomNum));
@@ -51,9 +54,18 @@ export const Main = ({ setIsLogin }) => {
                 }
             }
 
-            return [...prev]
+            return [...prev];
         });
 
+        //デバッグ用
+        // setField([
+        //     [0, 0, 0, 0, 0, 0],
+        //     [0, 1, 2, 3, 4, 0],
+        //     [0, 5, 6, 7, 8, 0],
+        //     [0, 9, 10, 11, 12, 0],
+        //     [0, 13, 14, 16, 15, 0],
+        //     [0, 0, 0, 0, 0, 0],
+        // ])
     }
 
     useEffect(() => {
@@ -63,6 +75,25 @@ export const Main = ({ setIsLogin }) => {
         }
     }, [isRandomField]);
 
+
+    useEffect(() => {
+        if (!isField) {
+            setTime(0);
+            setMoveNum(0);
+        }
+    }, [isField]);
+
+
+    //ゲームクリア
+    useEffect(() => {
+        if (clearGame(initField, field) && isField) {
+            //ローカルストレージで記録を保存しておく
+            localStorage.setItem("time",time);
+            localStorage.setItem("move",moveNum)
+            setTime(0);
+            setMoveNum(0);
+        }
+    }, [field]);
 
     return (
         <>
@@ -93,7 +124,8 @@ export const Main = ({ setIsLogin }) => {
                 </div >
             }
             {isField && <Field setIsField={setIsField} field={field} setField={setField}
-            time={time} setTime={setTime} moveNum={moveNum} setMoveNum={setMoveNum} ></Field>}
+                time={time} setTime={setTime} moveNum={moveNum} setMoveNum={setMoveNum} getField={getField} initField={initField}
+                isField={isField} randomSetField={randomSetField}></Field>}
             {isSetting && <Setting setIsSetting={setIsSetting} setIsToggle={setIsToggle} isToggle={isToggle}></Setting>}
         </>
     )
